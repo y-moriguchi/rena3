@@ -165,6 +165,24 @@
                 };
             },
 
+            lookahead: function(exp) {
+                var wrapped = wrap(exp);
+
+                return function(match, index, attr) {
+                    var result = wrapped(match, index, attr);
+
+                    if(result) {
+                        return {
+                            match: "",
+                            lastIndex: index,
+                            attr: result.attr
+                        };
+                    } else {
+                        return null;
+                    }
+                };
+            },
+
             letrec: function(/* args */) {
                 var l = Array.prototype.slice.call(arguments),
                     delays = [],
@@ -196,10 +214,6 @@
 
             opt: function(exp) {
                 return me.choice(exp, "");
-            },
-
-            lookahead: function(exp) {
-                return me.lookaheadNot(me.lookaheadNot(exp));
             },
 
             attr: function(val) {
