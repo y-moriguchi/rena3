@@ -256,6 +256,61 @@
                 } else {
                     return concatNotSkip(key, me.choice(me.isEnd(), me.lookahead(optIgnore), me.lookaheadNot(me.notKey())));
                 }
+            },
+
+            stringBack: function(aString) {
+                return function(match, index, attr) {
+                    if(index < aString.length) {
+                        return null;
+                    } else if(aString === match.substring(index - aString.length, index)) {
+                        return {
+                            match: aString,
+                            lastIndex: index - aString.length,
+                            attr: attr
+                        };
+                    } else {
+                        return null;
+                    }
+                };
+            },
+
+            lookbehindString: function(aString) {
+                return me.lookahead(me.stringBack(aString));
+            },
+
+            move: function(indexNew) {
+                if(typeof indexNew !== "number" || indexNew < 0) {
+                    throw new Error("index must be non-negative number");
+                }
+                return function(match, index, attr) {
+                    return {
+                        match: "",
+                        lastIndex: indexNew > match.length ? match.length : indexNew,
+                        attr: attr
+                    };
+                };
+            },
+
+            moveRelational: function(indexRel) {
+                return function(match, index, attr) {
+                    var indexNew = index + indexRel;
+
+                    return {
+                        match: "",
+                        lastIndex: indexNew < 0 ? 0 : indexNew > match.length ? match.length : indexNew,
+                        attr: attr
+                    };
+                };
+            },
+
+            moveEnd: function() {
+                return function(match, index, attr) {
+                    return {
+                        match: "",
+                        lastIndex: match.length,
+                        attr: attr
+                    };
+                };
             }
         };
         return me;

@@ -22,6 +22,16 @@ describe("Rena3", function () {
         expect(pattern(string, 0, false)).toBeNull();
     }
 
+    function matchIndex(pattern, index, string, match, lastIndex) {
+        var result = pattern(string, index, false);
+        expect(result.match).toBe(match);
+        expect(result.lastIndex).toBe(lastIndex);
+    }
+
+    function nomatchIndex(pattern, index, string) {
+        expect(pattern(string, index, false)).toBeNull();
+    }
+
     function throwErrchoice(patternThunk) {
         try {
             patternThunk();
@@ -240,6 +250,36 @@ describe("Rena3", function () {
             expect(assertParse("(1+2)*3").attr).toBe(9);
             expect(assertParse("4-6/2").attr).toBe(1);
             expect(assertParse("1+2+3*3").attr).toBe(12);
+        });
+
+        it("stringBack", function () {
+            matchIndex(Rena().stringBack("765"), 6, "346765", "765", 3);
+            nomatchIndex(Rena().stringBack("765"), 6, "346961");
+            nomatchIndex(Rena().stringBack("765"), 2, "00");
+        });
+
+        it("lookbehindString", function () {
+            matchIndex(Rena().lookbehindString("765"), 6, "346765", "", 6);
+            nomatchIndex(Rena().lookbehindString("765"), 6, "346961");
+            nomatchIndex(Rena().lookbehindString("765"), 2, "00");
+        });
+
+        it("move", function() {
+            match(Rena().move(6), "346765", "", 6);
+            match(Rena().move(7), "346765", "", 6);
+        });
+
+        it("moveRelational", function() {
+            matchIndex(Rena().moveRelational(2), 3, "346765", "", 5);
+            matchIndex(Rena().moveRelational(3), 3, "346765", "", 6);
+            matchIndex(Rena().moveRelational(4), 3, "346765", "", 6);
+            matchIndex(Rena().moveRelational(-2), 3, "346765", "", 1);
+            matchIndex(Rena().moveRelational(-3), 3, "346765", "", 0);
+            matchIndex(Rena().moveRelational(-4), 3, "346765", "", 0);
+        });
+
+        it("moveEnd", function() {
+            match(Rena().moveEnd(), "346765", "", 6);
         });
     });
 });
