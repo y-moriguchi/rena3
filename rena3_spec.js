@@ -276,6 +276,7 @@ describe("Rena3", function () {
             matchIndex(Rena().rangeBack("b"), 2, "0b", "b", 1);
             nomatchIndex(Rena().rangeBack("b"), 2, "0a");
             nomatchIndex(Rena().rangeBack("b"), 2, "0c");
+            nomatchIndex(Rena().rangeBack("c"), 0, "0a");
         });
 
         it("lookbehindRange", function () {
@@ -290,6 +291,7 @@ describe("Rena3", function () {
             matchIndex(Rena().lookbehindRange("b"), 2, "0b", "", 2);
             nomatchIndex(Rena().lookbehindRange("b"), 2, "0a");
             nomatchIndex(Rena().lookbehindRange("b"), 2, "0c");
+            nomatchIndex(Rena().lookbehindRange("c"), 0, "0a");
         });
 
         it("move", function() {

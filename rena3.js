@@ -119,7 +119,9 @@
         }
 
         function getPreviousCodePoint(aString, index) {
-            if(index === 1 || !String.prototype.codePointAt) {
+            if(index < 1) {
+                return null;
+            } else if(index === 1 || !String.prototype.codePointAt) {
                 return {
                     point: aString.charCodeAt(index - 1),
                     index: index - 1
