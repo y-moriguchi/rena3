@@ -264,6 +264,34 @@ describe("Rena3", function () {
             nomatchIndex(Rena().lookbehindString("765"), 2, "00");
         });
 
+        it("rangeBack", function () {
+            matchIndex(Rena().rangeBack("b", "y"), 2, "0b", "b", 1);
+            matchIndex(Rena().rangeBack("b", "y"), 2, "0y", "y", 1);
+            nomatchIndex(Rena().rangeBack("b", "y"), 2, "0a");
+            nomatchIndex(Rena().rangeBack("b", "y"), 2, "0z");
+            matchIndex(Rena().rangeBack("c", "\uD83D\uDC0F"), 2, "0c", "c", 1);
+            matchIndex(Rena().rangeBack("c", "\uD83D\uDC0F"), 2, "\uD83D\uDC0F", "\uD83D\uDC0F", 0);
+            nomatchIndex(Rena().rangeBack("c", "\uD83D\uDC0F"), 2, "0b");
+            nomatchIndex(Rena().rangeBack("c", "\uD83D\uDC0F"), 2, "\uD83D\uDC10");
+            matchIndex(Rena().rangeBack("b"), 2, "0b", "b", 1);
+            nomatchIndex(Rena().rangeBack("b"), 2, "0a");
+            nomatchIndex(Rena().rangeBack("b"), 2, "0c");
+        });
+
+        it("lookbehindRange", function () {
+            matchIndex(Rena().lookbehindRange("b", "y"), 2, "0b", "", 2);
+            matchIndex(Rena().lookbehindRange("b", "y"), 2, "0y", "", 2);
+            nomatchIndex(Rena().lookbehindRange("b", "y"), 2, "0a");
+            nomatchIndex(Rena().lookbehindRange("b", "y"), 2, "0z");
+            matchIndex(Rena().lookbehindRange("c", "\uD83D\uDC0F"), 2, "0c", "", 2);
+            matchIndex(Rena().lookbehindRange("c", "\uD83D\uDC0F"), 2, "\uD83D\uDC0F", "", 2);
+            nomatchIndex(Rena().lookbehindRange("c", "\uD83D\uDC0F"), 2, "0b");
+            nomatchIndex(Rena().lookbehindRange("c", "\uD83D\uDC0F"), 2, "\uD83D\uDC10");
+            matchIndex(Rena().lookbehindRange("b"), 2, "0b", "", 2);
+            nomatchIndex(Rena().lookbehindRange("b"), 2, "0a");
+            nomatchIndex(Rena().lookbehindRange("b"), 2, "0c");
+        });
+
         it("move", function() {
             match(Rena().move(6), "346765", "", 6);
             match(Rena().move(7), "346765", "", 6);

@@ -7,6 +7,8 @@
             optKeys = option ? option.keys : null,
             concatNotSkip = concat0(function(match, index) { return index; }),
             patternFloat = /[\+\-]?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][\+\-]?[0-9]+)?/,
+            codePointAt = getCodePointAtFunction(),
+            fromCodePoint = getFromCodePointFunction(),
             me;
 
         function wrap(anObject) {
@@ -94,6 +96,45 @@
                     };
                 };
             };
+        }
+
+        function getCodePointAtFunction() {
+            if(String.prototype.codePointAt) {
+                return function(aString, index) {
+                    return aString.codePointAt(index);
+                };
+            } else {
+                return function(aString, index) {
+                    return aString.charCodeAt(index);
+                };
+            }
+        }
+
+        function getFromCodePointFunction() {
+            if(String.fromCodePoint) {
+                return String.fromCodePoint;
+            } else {
+                return String.fromCharCode;
+            }
+        }
+
+        function getPreviousCodePoint(aString, index) {
+            if(index === 1 || !String.prototype.codePointAt) {
+                return {
+                    point: aString.charCodeAt(index - 1),
+                    index: index - 1
+                };
+            } else if(aString.codePointAt(index - 2) >= 65536) {
+                return {
+                    point: aString.codePointAt(index - 2),
+                    index: index - 2
+                };
+            } else {
+                return {
+                    point: aString.codePointAt(index - 1),
+                    index: index - 1
+                };
+            }
         }
 
         me = {
@@ -276,6 +317,31 @@
 
             lookbehindString: function(aString) {
                 return me.lookahead(me.stringBack(aString));
+            },
+
+            rangeBack: function(fromChar, toChar) {
+                var fromPoint = codePointAt(fromChar, 0),
+                    toPoint = toChar === void 0 ? fromPoint : codePointAt(toChar, 0);
+
+                return function(match, index, attr) {
+                    var point = getPreviousCodePoint(match, index);
+
+                    if(!point) {
+                        return null;
+                    } else if(point.point >= fromPoint && point.point <= toPoint) {
+                        return {
+                            match: fromCodePoint(point.point),
+                            lastIndex: point.index,
+                            attr: attr
+                        };
+                    } else {
+                        return null;
+                    }
+                };
+            },
+
+            lookbehindRange: function(fromChar, toChar) {
+                return me.lookahead(me.rangeBack(fromChar, toChar));
             },
 
             move: function(indexNew) {
