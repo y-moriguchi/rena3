@@ -7,9 +7,23 @@
             optKeys = option ? option.keys : null,
             concatNotSkip = concat0(function(match, index) { return index; }),
             patternFloat = /[\+\-]?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][\+\-]?[0-9]+)?/,
-            codePointAt = getCodePointAtFunction(),
-            fromCodePoint = getFromCodePointFunction(),
             me;
+
+        function matchString(aString, func) {
+            return function(match, index, attr) {
+                var toMatch = match.substring(index, index + aString.length);
+
+                if(func(aString) === func(toMatch)) {
+                    return {
+                        match: toMatch,
+                        lastIndex: index + toMatch.length,
+                        attr: attr
+                    };
+                } else {
+                    return null;
+                }
+            };
+        }
 
         function wrap(anObject) {
             var regex,
@@ -17,17 +31,7 @@
                 reFlags = "g";
 
             if(typeof anObject === "string") {
-                return function(match, index, attr) {
-                    if(anObject === match.substring(index, index + anObject.length)) {
-                        return {
-                            match: anObject,
-                            lastIndex: index + anObject.length,
-                            attr: attr
-                        };
-                    } else {
-                        return null;
-                    }
-                };
+                return matchString(anObject, function(x) { return x; });
             } else if(anObject instanceof RegExp) {
                 reSource = anObject.source;
                 reFlags += anObject.ignoreCase ? "i" : "";
@@ -35,6 +39,7 @@
                 regex = new RegExp(reSource, reFlags);
                 return function(match, lastindex, attr) {
                     var match;
+
                     regex.lastIndex = 0;
                     if(!!(match = regex.exec(match.substring(lastindex))) && match.index === 0) {
                         return {
@@ -98,48 +103,11 @@
             };
         }
 
-        function getCodePointAtFunction() {
-            if(String.prototype.codePointAt) {
-                return function(aString, index) {
-                    return aString.codePointAt(index);
-                };
-            } else {
-                return function(aString, index) {
-                    return aString.charCodeAt(index);
-                };
-            }
-        }
-
-        function getFromCodePointFunction() {
-            if(String.fromCodePoint) {
-                return String.fromCodePoint;
-            } else {
-                return String.fromCharCode;
-            }
-        }
-
-        function getPreviousCodePoint(aString, index) {
-            if(index < 1) {
-                return null;
-            } else if(index === 1 || !String.prototype.codePointAt) {
-                return {
-                    point: aString.charCodeAt(index - 1),
-                    index: index - 1
-                };
-            } else if(aString.codePointAt(index - 2) >= 65536) {
-                return {
-                    point: aString.codePointAt(index - 2),
-                    index: index - 2
-                };
-            } else {
-                return {
-                    point: aString.codePointAt(index - 1),
-                    index: index - 1
-                };
-            }
-        }
-
         me = {
+            ignoreCase: function(aString) {
+                return matchString(aString, function(x) { return x.toLowerCase(); });
+            },
+
             isEnd: function() {
                 return function(match, index, attr) {
                     if(index >= match.length) {
@@ -299,86 +267,6 @@
                 } else {
                     return concatNotSkip(key, me.choice(me.isEnd(), me.lookahead(optIgnore), me.lookaheadNot(me.notKey())));
                 }
-            },
-
-            stringBack: function(aString) {
-                return function(match, index, attr) {
-                    if(index < aString.length) {
-                        return null;
-                    } else if(aString === match.substring(index - aString.length, index)) {
-                        return {
-                            match: aString,
-                            lastIndex: index - aString.length,
-                            attr: attr
-                        };
-                    } else {
-                        return null;
-                    }
-                };
-            },
-
-            lookbehindString: function(aString) {
-                return me.lookahead(me.stringBack(aString));
-            },
-
-            rangeBack: function(fromChar, toChar) {
-                var fromPoint = codePointAt(fromChar, 0),
-                    toPoint = toChar === void 0 ? fromPoint : codePointAt(toChar, 0);
-
-                return function(match, index, attr) {
-                    var point = getPreviousCodePoint(match, index);
-
-                    if(!point) {
-                        return null;
-                    } else if(point.point >= fromPoint && point.point <= toPoint) {
-                        return {
-                            match: fromCodePoint(point.point),
-                            lastIndex: point.index,
-                            attr: attr
-                        };
-                    } else {
-                        return null;
-                    }
-                };
-            },
-
-            lookbehindRange: function(fromChar, toChar) {
-                return me.lookahead(me.rangeBack(fromChar, toChar));
-            },
-
-            move: function(indexNew) {
-                if(typeof indexNew !== "number" || indexNew < 0) {
-                    throw new Error("index must be non-negative number");
-                }
-                return function(match, index, attr) {
-                    return {
-                        match: "",
-                        lastIndex: indexNew > match.length ? match.length : indexNew,
-                        attr: attr
-                    };
-                };
-            },
-
-            moveRelational: function(indexRel) {
-                return function(match, index, attr) {
-                    var indexNew = index + indexRel;
-
-                    return {
-                        match: "",
-                        lastIndex: indexNew < 0 ? 0 : indexNew > match.length ? match.length : indexNew,
-                        attr: attr
-                    };
-                };
-            },
-
-            moveEnd: function() {
-                return function(match, index, attr) {
-                    return {
-                        match: "",
-                        lastIndex: match.length,
-                        attr: attr
-                    };
-                };
             }
         };
         return me;

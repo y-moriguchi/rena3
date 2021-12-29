@@ -62,7 +62,18 @@ describe("Rena3", function () {
             match(r.concat("string"), "string", "string", 6);
             match(r.concat("string"), "strings", "string", 6);
             nomatch(r.concat("string"), "strin");
+            nomatch(r.concat("string"), "String");
             match(r.concat(""), "string", "", 0);
+        });
+
+        it("ignore case", function () {
+            var r = Rena();
+            match(r.ignoreCase("string"), "string", "string", 6);
+            match(r.ignoreCase("string"), "STRING", "STRING", 6);
+            match(r.ignoreCase("string"), "String", "String", 6);
+            match(r.ignoreCase("string"), "strings", "string", 6);
+            nomatch(r.ignoreCase("string"), "strin");
+            match(r.ignoreCase(""), "string", "", 0);
         });
 
         it("simple regex match", function () {
@@ -250,66 +261,6 @@ describe("Rena3", function () {
             expect(assertParse("(1+2)*3").attr).toBe(9);
             expect(assertParse("4-6/2").attr).toBe(1);
             expect(assertParse("1+2+3*3").attr).toBe(12);
-        });
-
-        it("stringBack", function () {
-            matchIndex(Rena().stringBack("765"), 6, "346765", "765", 3);
-            nomatchIndex(Rena().stringBack("765"), 6, "346961");
-            nomatchIndex(Rena().stringBack("765"), 2, "00");
-        });
-
-        it("lookbehindString", function () {
-            matchIndex(Rena().lookbehindString("765"), 6, "346765", "", 6);
-            nomatchIndex(Rena().lookbehindString("765"), 6, "346961");
-            nomatchIndex(Rena().lookbehindString("765"), 2, "00");
-        });
-
-        it("rangeBack", function () {
-            matchIndex(Rena().rangeBack("b", "y"), 2, "0b", "b", 1);
-            matchIndex(Rena().rangeBack("b", "y"), 2, "0y", "y", 1);
-            nomatchIndex(Rena().rangeBack("b", "y"), 2, "0a");
-            nomatchIndex(Rena().rangeBack("b", "y"), 2, "0z");
-            matchIndex(Rena().rangeBack("c", "\uD83D\uDC0F"), 2, "0c", "c", 1);
-            matchIndex(Rena().rangeBack("c", "\uD83D\uDC0F"), 2, "\uD83D\uDC0F", "\uD83D\uDC0F", 0);
-            nomatchIndex(Rena().rangeBack("c", "\uD83D\uDC0F"), 2, "0b");
-            nomatchIndex(Rena().rangeBack("c", "\uD83D\uDC0F"), 2, "\uD83D\uDC10");
-            matchIndex(Rena().rangeBack("b"), 2, "0b", "b", 1);
-            nomatchIndex(Rena().rangeBack("b"), 2, "0a");
-            nomatchIndex(Rena().rangeBack("b"), 2, "0c");
-            nomatchIndex(Rena().rangeBack("c"), 0, "0a");
-        });
-
-        it("lookbehindRange", function () {
-            matchIndex(Rena().lookbehindRange("b", "y"), 2, "0b", "", 2);
-            matchIndex(Rena().lookbehindRange("b", "y"), 2, "0y", "", 2);
-            nomatchIndex(Rena().lookbehindRange("b", "y"), 2, "0a");
-            nomatchIndex(Rena().lookbehindRange("b", "y"), 2, "0z");
-            matchIndex(Rena().lookbehindRange("c", "\uD83D\uDC0F"), 2, "0c", "", 2);
-            matchIndex(Rena().lookbehindRange("c", "\uD83D\uDC0F"), 2, "\uD83D\uDC0F", "", 2);
-            nomatchIndex(Rena().lookbehindRange("c", "\uD83D\uDC0F"), 2, "0b");
-            nomatchIndex(Rena().lookbehindRange("c", "\uD83D\uDC0F"), 2, "\uD83D\uDC10");
-            matchIndex(Rena().lookbehindRange("b"), 2, "0b", "", 2);
-            nomatchIndex(Rena().lookbehindRange("b"), 2, "0a");
-            nomatchIndex(Rena().lookbehindRange("b"), 2, "0c");
-            nomatchIndex(Rena().lookbehindRange("c"), 0, "0a");
-        });
-
-        it("move", function() {
-            match(Rena().move(6), "346765", "", 6);
-            match(Rena().move(7), "346765", "", 6);
-        });
-
-        it("moveRelational", function() {
-            matchIndex(Rena().moveRelational(2), 3, "346765", "", 5);
-            matchIndex(Rena().moveRelational(3), 3, "346765", "", 6);
-            matchIndex(Rena().moveRelational(4), 3, "346765", "", 6);
-            matchIndex(Rena().moveRelational(-2), 3, "346765", "", 1);
-            matchIndex(Rena().moveRelational(-3), 3, "346765", "", 0);
-            matchIndex(Rena().moveRelational(-4), 3, "346765", "", 0);
-        });
-
-        it("moveEnd", function() {
-            match(Rena().moveEnd(), "346765", "", 6);
         });
     });
 });
